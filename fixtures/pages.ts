@@ -1,12 +1,15 @@
 import { test as baseTest } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 import { DashboardPage } from '../pages/DashboardPage';
-import { InvoiceForm } from '../pages/InvoiceForm';
+import { InvoiceForm, SubmitType } from '../pages/InvoiceForm';
+import { ACCESS_CODE, invoiceTestData } from '../tests/data/AppData';
+import { InvoiceData } from '../tests/data/InvoiceData';
 
 type PagesFixtures = {
   loginPage: LoginPage;
   dashboardPage: DashboardPage;
-  invoiceForm: InvoiceForm;
+  newInvoiceForm: InvoiceForm;
+  editInvoiceForm: { editForm: InvoiceForm; invoiceData: InvoiceData };
 };
 
 export const test = baseTest.extend<PagesFixtures>({
@@ -16,14 +19,23 @@ export const test = baseTest.extend<PagesFixtures>({
     await use(loginPage);
   },
   dashboardPage: async ({ loginPage }, use) => {
-    await loginPage.enterWithCode('UXTY789@!!1');
+    await loginPage.enterWithCode(ACCESS_CODE);
     const dashboardPage = new DashboardPage(loginPage.page);
     await use(dashboardPage);
   },
-  invoiceForm: async ({ dashboardPage }, use) => {
+  newInvoiceForm: async ({ dashboardPage }, use) => {
     await dashboardPage.clickNewInvoiceButton();
-    const invoiceForm = new InvoiceForm(dashboardPage.page);
-    await use(invoiceForm);
+    const newInvoiceForm = new InvoiceForm(dashboardPage.page);
+    await use(newInvoiceForm);
+  },
+  editInvoiceForm: async ({ dashboardPage, newInvoiceForm }, use) => {
+    const newInvoice: InvoiceData = await newInvoiceForm.fillAndSubmitFormWith(
+      invoiceTestData,
+      SubmitType.newInvoice
+    );
+    await dashboardPage.clickEditButtonOfInvoice(newInvoice.getId());
+    const editInvoiceForm = newInvoiceForm;
+    await use({ editForm: editInvoiceForm, invoiceData: newInvoice });
   },
 });
 

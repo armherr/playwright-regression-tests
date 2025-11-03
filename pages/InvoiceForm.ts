@@ -1,11 +1,5 @@
 import { Page, Locator } from '@playwright/test';
-
-export type InvoiceData = {
-  invoiceNumber: string;
-  total: string;
-  invoiceDate: string;
-  status: string;
-};
+import { InvoiceData } from '../tests/data/InvoiceData';
 
 export enum InvoiceFields {
   number,
@@ -14,9 +8,15 @@ export enum InvoiceFields {
   status,
 }
 
+export enum SubmitType {
+  newInvoice,
+  editInvoice,
+}
+
 export class InvoiceForm {
-  // Form fields
   private readonly newInvoiceHeader;
+  private readonly editInvoiceHeader;
+  // Form fields
   private readonly invoiceNumberInput;
   private readonly totalInput;
   private readonly invoiceDateInput;
@@ -24,14 +24,17 @@ export class InvoiceForm {
   // Buttons
   private readonly cancelButton;
   private readonly createInvoiceButton;
+  private readonly updateInvoiceButton;
   // Error messages
   private readonly invoiceNumberError;
   private readonly totalError;
   private readonly statusError;
 
   constructor(public readonly page: Page) {
-    // New invoice form fields
     this.newInvoiceHeader = this.page.getByText('Crear Nueva Factura');
+    this.editInvoiceHeader = this.page.getByText('Editar Factura');
+
+    // New / Edit invoice form fields
     this.invoiceNumberInput = this.page.locator('#invoiceNumber');
     this.totalInput = this.page.locator('#total');
     this.invoiceDateInput = this.page.locator('#invoiceDate');
@@ -41,6 +44,9 @@ export class InvoiceForm {
     this.cancelButton = this.page.getByRole('button', { name: 'Cancelar' });
     this.createInvoiceButton = this.page.getByRole('button', {
       name: 'Crear Factura',
+    });
+    this.updateInvoiceButton = this.page.getByRole('button', {
+      name: 'Actualizar Factura',
     });
 
     // Error messages
@@ -53,6 +59,27 @@ export class InvoiceForm {
 
   getNewInvoiceHeader(): Locator {
     return this.newInvoiceHeader;
+  }
+
+  getEditInvoiceHeader(): Locator {
+    return this.editInvoiceHeader;
+  }
+
+  // Get input field
+  getFormField(field: InvoiceFields): Locator {
+    switch (field) {
+      case InvoiceFields.number:
+        return this.invoiceNumberInput;
+        break;
+      case InvoiceFields.total:
+        return this.totalInput;
+        break;
+      case InvoiceFields.status:
+        return this.statusSelect;
+        break;
+      case InvoiceFields.date:
+        return this.invoiceDateInput;
+    }
   }
 
   // Get error message corresponding to the missing field
@@ -82,16 +109,15 @@ export class InvoiceForm {
     await this.createInvoiceButton.click();
   }
 
-  async enterInvoiceData({
-    invoiceNumber,
-    total,
-    invoiceDate,
-    status,
-  }: InvoiceData) {
-    await this.invoiceNumberInput.fill(invoiceNumber);
-    await this.totalInput.fill(total);
-    await this.invoiceDateInput.fill(invoiceDate);
-    await this.statusSelect.selectOption(status);
+  async clickUpdateInvoiceButton() {
+    this.updateInvoiceButton.click();
+  }
+
+  async enterInvoiceData(invoiceData: InvoiceData) {
+    await this.invoiceNumberInput.fill(invoiceData.getInvoiceNumber());
+    await this.totalInput.fill(invoiceData.getTotal());
+    await this.invoiceDateInput.fill(invoiceData.getDateForInput());
+    await this.statusSelect.selectOption(invoiceData.getStatus());
   }
 
   async clearField(field: InvoiceFields) {
@@ -111,21 +137,55 @@ export class InvoiceForm {
     }
   }
 
-  async createInvoiceAndGetId(invoiceData: InvoiceData): Promise<string> {
+  async fillAndSubmitFormWith(
+    invoiceDataToSubmit: InvoiceData,
+    submitType: SubmitType,
+    invoiceIdToEdit: string = '-1'
+  ): Promise<InvoiceData> {
     // Fill the form
-    await this.enterInvoiceData(invoiceData);
+    await this.enterInvoiceData(invoiceDataToSubmit);
 
-    // Catch the response of the POST request made after clicking on "Crear Nueva Factura"
-    const [response] = await Promise.all([
-      this.page.waitForResponse(
-        resp => resp.url().includes('/V1/invoices') && resp.status() === 201
-      ),
-      this.clickCreateInvoiceButton(),
-    ]);
+    let response;
 
-    // Get the invoice ID
+    switch (submitType) {
+      case SubmitType.newInvoice:
+        // Catch the response of the POST request made after clicking on "Crear Nueva Factura"
+        [response] = await Promise.all([
+          this.page.waitForResponse(
+            resp => resp.url().includes('/V1/invoices') && resp.status() === 201
+          ),
+          this.clickCreateInvoiceButton(),
+        ]);
+        break;
+      case SubmitType.editInvoice:
+        // Catch the response of the PUT request made after clicking on "Actualizar Factura"
+        [response] = await Promise.all([
+          this.page.waitForResponse(
+            resp =>
+              resp.url().includes(`/V1/invoices/${invoiceIdToEdit}`) &&
+              resp.status() === 200
+          ),
+          this.clickUpdateInvoiceButton(),
+        ]);
+    }
+
+    // Get the invoice data
     const body = await response.json();
-    return body.id;
+
+    // Format date (server returns DD/MM/YYYY)
+    const [datePart, timePart] = body.invoiceDate.split(' ');
+    // Extract day, month, year
+    const [day, month, year] = datePart.split('/').map(Number);
+    // Create a Date object
+    const correctDate = new Date(`${year}-${month}-${day} ${timePart}`);
+
+    return new InvoiceData(
+      body.invoiceNumber,
+      body.total,
+      correctDate,
+      body.status,
+      body.id
+    );
   }
 
   async tryCreatingInvoiceWithMissingField(

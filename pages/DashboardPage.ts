@@ -5,12 +5,18 @@ import { InvoiceData } from '../tests/data/InvoiceData';
 export class DashboardPage {
   private readonly headerText;
   private readonly newInvoiceButton;
+  private readonly previousPageButton;
+  private readonly nextPageButton;
 
   constructor(public readonly page: Page) {
     this.headerText = this.page.getByText('Sistema de Facturas');
     this.newInvoiceButton = this.page.getByRole('button', {
       name: 'Nueva Factura',
     });
+    this.previousPageButton = this.page.getByRole('button', {
+      name: 'Previous',
+    });
+    this.nextPageButton = this.page.getByRole('button', { name: 'Next' });
   }
 
   getHeaderText(): Locator {
@@ -42,6 +48,24 @@ export class DashboardPage {
 
   async clickNewInvoiceButton() {
     await this.newInvoiceButton.click();
+  }
+
+  async goToPreviousPage() {
+    await this.previousPageButton.click();
+  }
+
+  async goToNextPage() {
+    await this.nextPageButton.click();
+  }
+
+  async getFirstAndLastInvoicesInPage() {
+    const firstRow = this.page.locator('table tbody tr').first();
+    const lastRow = this.page.locator('table tbody tr').last();
+
+    const firstId = await firstRow.locator('th').textContent();
+    const lastId = await lastRow.locator('th').textContent();
+
+    return { first: firstId, last: lastId };
   }
 
   async clickEditButtonOfInvoice(invoiceId: string) {

@@ -49,6 +49,7 @@ export class InvoiceData {
     );
   }
 
+  // Return date in format YYYY-MM-DDTHH:MM
   getDateForInput(): string {
     const pad = (n: Number) => n.toString().padStart(2, '0');
     const formatted =
@@ -65,8 +66,11 @@ export class InvoiceData {
     return formatted;
   }
 
-  setDatePlusOneDay() {
-    this.invoiceDate.setDate(this.invoiceDate.getDate() + 3);
+  getDatePlusMinusDays(days: number, action: 'plus' | 'minus') {
+    const currDate = new Date(this.invoiceDate);
+    if (action === 'plus') currDate.setDate(this.invoiceDate.getDate() + days);
+    else currDate.setDate(this.invoiceDate.getDate() - days);
+    return currDate;
   }
 
   getDateToCompare(): string {

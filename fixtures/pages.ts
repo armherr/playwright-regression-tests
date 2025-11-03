@@ -2,8 +2,13 @@ import { test as baseTest } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { InvoiceForm, SubmitType } from '../pages/InvoiceForm';
-import { ACCESS_CODE, invoiceTestData } from '../tests/data/AppData';
+import {
+  ACCESS_CODE,
+  invoiceTestData,
+  deleteInvoiceTestData,
+} from '../tests/data/AppData';
 import { InvoiceData } from '../tests/data/InvoiceData';
+import { FilterForm } from '../pages/FilterForm';
 
 type PagesFixtures = {
   loginPage: LoginPage;
@@ -11,6 +16,11 @@ type PagesFixtures = {
   newInvoiceForm: InvoiceForm;
   editInvoiceForm: { editForm: InvoiceForm; invoiceData: InvoiceData };
   deleteInvoice: { dashboardPage: DashboardPage; invoiceData: InvoiceData };
+  filterForm: {
+    filter: FilterForm;
+    active: InvoiceData;
+    deleted: InvoiceData;
+  };
 };
 
 export const test = baseTest.extend<PagesFixtures>({
@@ -44,6 +54,27 @@ export const test = baseTest.extend<PagesFixtures>({
       SubmitType.newInvoice
     );
     await use({ dashboardPage, invoiceData: newInvoice });
+  },
+  filterForm: async ({ dashboardPage, newInvoiceForm }, use) => {
+    const activeInvoice = await newInvoiceForm.fillAndSubmitFormWith(
+      invoiceTestData,
+      SubmitType.newInvoice
+    );
+    await dashboardPage.clickNewInvoiceButton();
+    const deletedInvoice = await newInvoiceForm.fillAndSubmitFormWith(
+      deleteInvoiceTestData,
+      SubmitType.newInvoice
+    );
+    await dashboardPage.deleteInvoiceAndChooseAction(
+      deletedInvoice.getId(),
+      'OK'
+    );
+    const filterForm = new FilterForm(dashboardPage.page);
+    await use({
+      filter: filterForm,
+      active: activeInvoice,
+      deleted: deletedInvoice,
+    });
   },
 });
 

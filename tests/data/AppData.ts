@@ -12,6 +12,13 @@ export const invoiceTestData = new InvoiceData(
 export const editInvoiceTestData = new InvoiceData(
   'EDIT999',
   3456,
-  new Date(),
+  new Date('2025-12-12'),
+  'Cancelado'
+);
+
+export const deleteInvoiceTestData = new InvoiceData(
+  'DEL001',
+  1989,
+  new Date('2026-01-01'),
   'Cancelado'
 );

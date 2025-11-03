@@ -30,7 +30,6 @@ test('User is able to edit an invoice using valid values', async ({
   editInvoiceForm,
 }) => {
   const { editForm, invoiceData } = editInvoiceForm;
-  editInvoiceTestData.setDatePlusOneDay();
 
   await editForm.fillAndSubmitFormWith(
     editInvoiceTestData,

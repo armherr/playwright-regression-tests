@@ -21,4 +21,7 @@ test('User is able to cancel the deletion of an invoice', async ({
   await expect(
     dashboardPage.getInvoiceRowWithId(invoiceData.getId())
   ).toBeVisible();
+
+  // Delete invoice
+  await dashboardPage.deleteInvoiceAndChooseAction(invoiceData.getId(), 'OK');
 });

@@ -113,6 +113,7 @@ export class InvoiceForm {
     this.updateInvoiceButton.click();
   }
 
+  // Fill the form values with the data received
   async enterInvoiceData(invoiceData: InvoiceData) {
     await this.invoiceNumberInput.fill(invoiceData.getInvoiceNumber());
     await this.totalInput.fill(invoiceData.getTotal());
@@ -120,6 +121,7 @@ export class InvoiceForm {
     await this.statusSelect.selectOption(invoiceData.getStatus());
   }
 
+  // Clear the specified field
   async clearField(field: InvoiceFields) {
     switch (field) {
       case InvoiceFields.number:
@@ -137,6 +139,7 @@ export class InvoiceForm {
     }
   }
 
+  // Fill the form, click on Create/Update and catch the response to obtain the invoice data (*id*)
   async fillAndSubmitFormWith(
     invoiceDataToSubmit: InvoiceData,
     submitType: SubmitType,
@@ -172,6 +175,7 @@ export class InvoiceForm {
     // Get the invoice data
     const body = await response.json();
 
+    // Code needed due to different date format in response JSON
     // Format date (server returns DD/MM/YYYY)
     const [datePart, timePart] = body.invoiceDate.split(' ');
     // Extract day, month, year
@@ -188,6 +192,7 @@ export class InvoiceForm {
     );
   }
 
+  // Fill the form with the data received and clear the specified field
   async tryCreatingInvoiceWithMissingField(
     invoiceData: InvoiceData,
     missingField: InvoiceFields

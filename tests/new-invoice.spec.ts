@@ -14,6 +14,9 @@ test('User is able to create a new invoice', async ({
   await expect(
     dashboardPage.getInvoiceRowWithId(newInvoice.getId())
   ).toBeVisible();
+
+  // Delete invoice
+  await dashboardPage.deleteInvoiceAndChooseAction(newInvoice.getId(), 'OK');
 });
 
 test('User cannot create an invoice without an invoice number', async ({

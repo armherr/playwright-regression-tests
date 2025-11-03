@@ -2,6 +2,7 @@ import { InvoiceData } from './InvoiceData';
 
 export const ACCESS_CODE = 'UXTY789@!!1';
 
+// Data to pass when creating a new invoice
 export const invoiceTestData = new InvoiceData(
   'NEW001',
   1000,
@@ -9,6 +10,7 @@ export const invoiceTestData = new InvoiceData(
   'Vigente'
 );
 
+// Data to pass when editing an invoice
 export const editInvoiceTestData = new InvoiceData(
   'EDIT999',
   3456,
@@ -16,6 +18,7 @@ export const editInvoiceTestData = new InvoiceData(
   'Cancelado'
 );
 
+// Data to pass when creating and then deleting an invoice
 export const deleteInvoiceTestData = new InvoiceData(
   'DEL001',
   1989,

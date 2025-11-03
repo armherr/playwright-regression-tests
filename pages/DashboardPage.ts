@@ -1,5 +1,4 @@
 import { Page, Locator } from '@playwright/test';
-import { formatTotalFromTable } from '../utils/utils';
 import { InvoiceData } from '../tests/data/InvoiceData';
 
 export class DashboardPage {
@@ -27,10 +26,12 @@ export class DashboardPage {
     return this.headerText;
   }
 
+  // Get <tr> element by invoice Id
   getInvoiceRowWithId(invoiceId: string): Locator {
     return this.page.locator(`tr:has(th:has-text("${invoiceId}"))`);
   }
 
+  // Create an InvoiceData object with the info displayed in the table row
   async getInvoiceDataFromTable(invoiceId: string): Promise<InvoiceData> {
     const invoiceRow = this.getInvoiceRowWithId(invoiceId);
     const cells = invoiceRow.locator('td');
@@ -43,7 +44,7 @@ export class DashboardPage {
 
     return new InvoiceData(
       invoiceNumber,
-      formatTotalFromTable(total),
+      DashboardPage.formatTotalFromTable(total),
       new Date(invoiceDate),
       status,
       Number(invoiceId)
@@ -62,6 +63,7 @@ export class DashboardPage {
     await this.nextPageButton.click();
   }
 
+  // Get the first and last ids displayed in the current page of the invoices table
   async getFirstAndLastInvoicesInPage() {
     const firstRow = this.page.locator('table tbody tr').first();
     const lastRow = this.page.locator('table tbody tr').last();
@@ -88,6 +90,7 @@ export class DashboardPage {
     await deleteButton.click();
   }
 
+  // Try to delete an invoice with the option to cancel the flow
   async deleteInvoiceAndChooseAction(
     invoiceId: string,
     action: 'OK' | 'Cancel'
@@ -99,11 +102,19 @@ export class DashboardPage {
     await this.clickDeleteButtonOfInvoice(invoiceId);
   }
 
+  // Try to log out with the option to stay logged in
   async clickLogoutAndChooseAction(action: 'OK' | 'Cancel') {
     this.page.once('dialog', async dialog => {
       action === 'OK' ? await dialog.accept() : await dialog.dismiss();
     });
 
     await this.logoutButton.click();
+  }
+
+  // Format total amout from invoices table
+  static formatTotalFromTable(totalTable: string) {
+    // Remove $ sign and ,
+    const totalFormatted = totalTable.slice(1).replace(',', '');
+    return Number(totalFormatted);
   }
 }

@@ -39,16 +39,6 @@ export class InvoiceData {
     return this.status;
   }
 
-  getTotalForTable(): string {
-    return (
-      '$' +
-      this.total.toLocaleString('en-US', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })
-    );
-  }
-
   // Return date in format YYYY-MM-DDTHH:MM
   getDateForInput(): string {
     const pad = (n: Number) => n.toString().padStart(2, '0');
@@ -66,6 +56,7 @@ export class InvoiceData {
     return formatted;
   }
 
+  // Return the invoice date +/- a number of days
   getDatePlusMinusDays(days: number, action: 'plus' | 'minus') {
     const currDate = new Date(this.invoiceDate);
     if (action === 'plus') currDate.setDate(this.invoiceDate.getDate() + days);
@@ -73,6 +64,7 @@ export class InvoiceData {
     return currDate;
   }
 
+  // Format date to compare it with what is displayed in the table
   getDateToCompare(): string {
     return this.invoiceDate.toString().slice(0, 21);
   }

@@ -1,6 +1,4 @@
 import { Page, Locator } from '@playwright/test';
-import { formatTotalFromTable } from '../utils/utils';
-import { InvoiceData } from '../tests/data/InvoiceData';
 
 export type FilterOptions = {
   invoiceNumber?: string;
@@ -33,16 +31,25 @@ export class FilterForm {
     });
   }
 
+  async clearFilters() {
+    await this.clearFilterButton.click();
+  }
+
+  // Fill the form fields according to the values received
   async enterValuesAndFilter(filters: FilterOptions) {
     if (filters.invoiceNumber)
       await this.invoiceNumberInput.fill(filters.invoiceNumber);
     if (filters.status) await this.statusSelect.selectOption(filters.status);
     if (filters.initialDate) {
-      const formattedInitialDate = this.formatDateToFilter(filters.initialDate);
+      const formattedInitialDate = FilterForm.formatDateToFilter(
+        filters.initialDate
+      );
       await this.initialDateInput.fill(formattedInitialDate);
     }
     if (filters.finalDate) {
-      const formattedFinalDate = this.formatDateToFilter(filters.finalDate);
+      const formattedFinalDate = FilterForm.formatDateToFilter(
+        filters.finalDate
+      );
       await this.finalDateInput.fill(formattedFinalDate);
     }
     if (filters.showDeleted) await this.showDeletedCheckBox.check();
@@ -50,7 +57,7 @@ export class FilterForm {
     await this.searchButton.click();
   }
 
-  formatDateToFilter(date: Date): string {
+  static formatDateToFilter(date: Date): string {
     const pad = (n: Number) => n.toString().padStart(2, '0');
     const formatted =
       date.getFullYear() +

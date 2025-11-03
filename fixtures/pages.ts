@@ -24,21 +24,25 @@ type PagesFixtures = {
 };
 
 export const test = baseTest.extend<PagesFixtures>({
+  // Navigate to "/"" where the login form is
   loginPage: async ({ page }, use) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await use(loginPage);
   },
+  // Enter the access code
   dashboardPage: async ({ loginPage }, use) => {
     await loginPage.enterWithCode(ACCESS_CODE);
     const dashboardPage = new DashboardPage(loginPage.page);
     await use(dashboardPage);
   },
+  // Click on "Nueva Factura" so the form is already displayed
   newInvoiceForm: async ({ dashboardPage }, use) => {
     await dashboardPage.clickNewInvoiceButton();
     const newInvoiceForm = new InvoiceForm(dashboardPage.page);
     await use(newInvoiceForm);
   },
+  // Create an invoice and click on "Editar Factura" so the form is displayed
   editInvoiceForm: async ({ dashboardPage, newInvoiceForm }, use) => {
     const newInvoice: InvoiceData = await newInvoiceForm.fillAndSubmitFormWith(
       invoiceTestData,
@@ -47,7 +51,9 @@ export const test = baseTest.extend<PagesFixtures>({
     await dashboardPage.clickEditButtonOfInvoice(newInvoice.getId());
     const editInvoiceForm = newInvoiceForm;
     await use({ editForm: editInvoiceForm, invoiceData: newInvoice });
+    await dashboardPage.deleteInvoiceAndChooseAction(newInvoice.getId(), 'OK');
   },
+  // Create an invoice
   deleteInvoice: async ({ dashboardPage, newInvoiceForm }, use) => {
     const newInvoice: InvoiceData = await newInvoiceForm.fillAndSubmitFormWith(
       invoiceTestData,
@@ -55,6 +61,7 @@ export const test = baseTest.extend<PagesFixtures>({
     );
     await use({ dashboardPage, invoiceData: newInvoice });
   },
+  // Create two invoices: keep one and delete the other
   filterForm: async ({ dashboardPage, newInvoiceForm }, use) => {
     const activeInvoice = await newInvoiceForm.fillAndSubmitFormWith(
       invoiceTestData,
@@ -75,6 +82,11 @@ export const test = baseTest.extend<PagesFixtures>({
       active: activeInvoice,
       deleted: deletedInvoice,
     });
+    await filterForm.clearFilters();
+    await dashboardPage.deleteInvoiceAndChooseAction(
+      activeInvoice.getId(),
+      'OK'
+    );
   },
 });
 

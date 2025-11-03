@@ -5,6 +5,7 @@ export class LoginPage {
   private readonly accessCodeInput: Locator;
   private readonly validateCodeButton: Locator;
   private readonly invalidCodeMessage: Locator;
+  private readonly accessCodeRequiredMessage: Locator;
 
   constructor(public readonly page: Page) {
     this.accessCodeInput = this.page.locator('#access-code');
@@ -13,6 +14,9 @@ export class LoginPage {
     });
     this.invalidCodeMessage = this.page.getByText(
       'El código de acceso no es válido'
+    );
+    this.accessCodeRequiredMessage = this.page.getByText(
+      'Código de Acceso Requerido'
     );
   }
 
@@ -28,5 +32,9 @@ export class LoginPage {
 
   getInvalidCodeMessage(): Locator {
     return this.invalidCodeMessage;
+  }
+
+  getAccessCodeRequiredMessage(): Locator {
+    return this.accessCodeRequiredMessage;
   }
 }

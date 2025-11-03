@@ -7,6 +7,7 @@ export class DashboardPage {
   private readonly newInvoiceButton;
   private readonly previousPageButton;
   private readonly nextPageButton;
+  private readonly logoutButton;
 
   constructor(public readonly page: Page) {
     this.headerText = this.page.getByText('Sistema de Facturas');
@@ -17,6 +18,9 @@ export class DashboardPage {
       name: 'Previous',
     });
     this.nextPageButton = this.page.getByRole('button', { name: 'Next' });
+    this.logoutButton = this.page.getByRole('button', {
+      name: 'Cerrar Sesión',
+    });
   }
 
   getHeaderText(): Locator {
@@ -89,10 +93,17 @@ export class DashboardPage {
     action: 'OK' | 'Cancel'
   ) {
     this.page.once('dialog', async dialog => {
-      if (action === 'OK') await dialog.accept();
-      else await dialog.dismiss();
+      action === 'OK' ? await dialog.accept() : await dialog.dismiss();
     });
 
     await this.clickDeleteButtonOfInvoice(invoiceId);
+  }
+
+  async clickLogoutAndChooseAction(action: 'OK' | 'Cancel') {
+    this.page.once('dialog', async dialog => {
+      action === 'OK' ? await dialog.accept() : await dialog.dismiss();
+    });
+
+    await this.logoutButton.click();
   }
 }

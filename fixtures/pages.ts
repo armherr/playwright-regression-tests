@@ -10,6 +10,7 @@ type PagesFixtures = {
   dashboardPage: DashboardPage;
   newInvoiceForm: InvoiceForm;
   editInvoiceForm: { editForm: InvoiceForm; invoiceData: InvoiceData };
+  deleteInvoice: { dashboardPage: DashboardPage; invoiceData: InvoiceData };
 };
 
 export const test = baseTest.extend<PagesFixtures>({
@@ -36,6 +37,13 @@ export const test = baseTest.extend<PagesFixtures>({
     await dashboardPage.clickEditButtonOfInvoice(newInvoice.getId());
     const editInvoiceForm = newInvoiceForm;
     await use({ editForm: editInvoiceForm, invoiceData: newInvoice });
+  },
+  deleteInvoice: async ({ dashboardPage, newInvoiceForm }, use) => {
+    const newInvoice: InvoiceData = await newInvoiceForm.fillAndSubmitFormWith(
+      invoiceTestData,
+      SubmitType.newInvoice
+    );
+    await use({ dashboardPage, invoiceData: newInvoice });
   },
 });
 

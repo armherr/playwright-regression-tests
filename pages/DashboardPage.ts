@@ -49,6 +49,26 @@ export class DashboardPage {
     const editButton = invoiceRow.getByRole('button', {
       name: 'Editar factura',
     });
-    editButton.click();
+    await editButton.click();
+  }
+
+  async clickDeleteButtonOfInvoice(invoiceId: string) {
+    const invoiceRow = this.getInvoiceRowWithId(invoiceId);
+    const deleteButton = invoiceRow.getByRole('button', {
+      name: 'Eliminar factura',
+    });
+    await deleteButton.click();
+  }
+
+  async deleteInvoiceAndChooseAction(
+    invoiceId: string,
+    action: 'OK' | 'Cancel'
+  ) {
+    this.page.once('dialog', async dialog => {
+      if (action === 'OK') await dialog.accept();
+      else await dialog.dismiss();
+    });
+
+    await this.clickDeleteButtonOfInvoice(invoiceId);
   }
 }

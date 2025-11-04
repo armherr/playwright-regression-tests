@@ -1,6 +1,6 @@
 import { InvoiceData } from './InvoiceData';
 
-export const ACCESS_CODE = 'UXTY789@!!1';
+export const ACCESS_CODE = process.env.ACCESS_CODE;
 
 // Data to pass when creating a new invoice
 export const invoiceTestData = new InvoiceData(
